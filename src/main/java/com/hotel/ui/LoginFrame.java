@@ -15,6 +15,9 @@ import com.hotel.ui.components.RoleCard;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -50,6 +53,7 @@ public class LoginFrame extends JFrame {
     private final PrimaryButton signInButton = new PrimaryButton("Sign in");
     private final BaseButton retryButton = new BaseButton("Retry connection");
     private final JLabel statusLabel = Ui.muted(" ");
+    private final JLabel capsLockWarning = Ui.label("Caps Lock is on");
 
     private Role selectedRole = Role.RECEPTIONIST;
     private boolean connected;
@@ -138,6 +142,10 @@ public class LoginFrame extends JFrame {
         FormPanel form = new FormPanel();
         form.addField("Username", KeyEvent.VK_U, usernameField);
         form.addField("Password", KeyEvent.VK_P, passwordField);
+        capsLockWarning.setForeground(Theme.warning());
+        capsLockWarning.setFont(Theme.font(Font.BOLD, 12f));
+        capsLockWarning.setVisible(false);
+        form.addFullWidth(capsLockWarning);
         form.addFullWidth(showPasswordBox);
 
         JButton forgot = linkButton("Forgot password?");
@@ -199,10 +207,53 @@ public class LoginFrame extends JFrame {
         usernameField.addActionListener(e -> passwordField.requestFocusInWindow());
         showPasswordBox.addItemListener(e ->
                 passwordField.setEchoChar(showPasswordBox.isSelected() ? (char) 0 : defaultEchoChar));
+
+        // Caps Lock warning: checked whenever a key is pressed or released in the password box,
+        // and when the box gains or loses focus (KeyListener + FocusListener).
+        passwordField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                updateCapsLockWarning();
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                updateCapsLockWarning();
+            }
+        });
+        passwordField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                updateCapsLockWarning();
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                capsLockWarning.setVisible(false);
+            }
+        });
+
         // Esc on the sign-in step goes back to "Who are you?"
         getRootPane().registerKeyboardAction(e -> {
             if (getRootPane().getDefaultButton() != null) showRoleStep();
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+    }
+
+    /** Shows "Caps Lock is on" while typing a password with Caps Lock on, a common cause of wrong passwords. */
+    private void updateCapsLockWarning() {
+        boolean on;
+        try {
+            on = Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK);
+        } catch (UnsupportedOperationException e) {
+            on = false;  // some systems cannot report Caps Lock; just don't warn
+        }
+        if (capsLockWarning.isVisible() != on) {
+            capsLockWarning.setVisible(on);
+            passwordField.getAccessibleContext().setAccessibleDescription(on
+                    ? "Caps Lock is on. Your password. Press Enter to sign in."
+                    : "Your password. Press Enter to sign in.");
+            capsLockWarning.revalidate();
+        }
     }
 
     private void chooseRole(Role role) {

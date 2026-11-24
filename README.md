@@ -186,7 +186,7 @@ screen showing that data refreshes itself. Screens never call each other directl
 |---|---|---|---|
 | 1 | Jaria Bah | 905004628 | |
 | 2 | Mariama Seray Bah | 905005454 | |
-| 3 | Mohamed Barry | 905004770 | |
+| 3 | Mohamed Barry | 905004770 | Sign-in, staff accounts and security: role-based sign-in, password hashing, staff management, password reset requests, Caps Lock warning |
 | 4 | Sahr Kemoh Ngaujah | 905005346 | |
 | 5 | Mariama Dalan Bah | 905005123 | |
 
