@@ -1,0 +1,21 @@
+# Build output
+target/
+build/
+out/
+*.class
+
+# Downloaded libraries (run.bat fetches the MySQL driver here)
+lib/
+
+# Local secrets
+config/db.properties
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.DS_Store
+Thumbs.db
